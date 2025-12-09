@@ -4,16 +4,26 @@ const mongoose = require('mongoose');
 const taskSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true, // Every task MUST have a title
+    required: true,
   },
   description: {
     type: String,
   },
+  
+  // 👇 THIS IS THE MISSING PART 👇
+  subtasks: [
+    {
+      title: { type: String, required: true },
+      completed: { type: Boolean, default: false }
+    }
+  ],
+  // 👆 YOU NEED THIS FOR SUBTASKS TO WORK 👆
+
   status: {
     type: String,
-    enum: ['todo', 'in-progress', 'done'], // Only these values allowed
+    enum: ['todo', 'in-progress', 'done'],
     default: 'todo',
   },
-}, { timestamps: true }); // Automatically adds 'createdAt' and 'updatedAt'
+}, { timestamps: true });
 
 module.exports = mongoose.model('Task', taskSchema);
