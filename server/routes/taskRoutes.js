@@ -37,7 +37,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-4. ADD A SUB-TASK (Check if you have this block!)
+//4. ADD A SUB-TASK (Check if you have this block!)
 router.post('/:id/subtasks', async (req, res) => {
   try {
     const { id } = req.params;
