@@ -37,4 +37,20 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+4. ADD A SUB-TASK (Check if you have this block!)
+router.post('/:id/subtasks', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title } = req.body;
+    const task = await Task.findById(id);
+    if (!task) return res.status(404).json({ message: 'Task not found' });
+
+    task.subtasks.push({ title });
+    await task.save();
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;
