@@ -4,7 +4,7 @@ import axios from 'axios';
 
 function App() {
   // --- STATE ---
-  const [token, setToken] = useState(null); // The Digital Key (null = not logged in)
+  const [token, setToken] = useState(null); // The Digital Key
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [subtaskInputs, setSubtaskInputs] = useState({});
@@ -12,7 +12,7 @@ function App() {
   // Auth State
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [isRegistering, setIsRegistering] = useState(false); // Toggle between Login/Register
+  const [isRegistering, setIsRegistering] = useState(false);
   const [authError, setAuthError] = useState("");
 
   // CHANGE THIS TO YOUR RENDER URL
@@ -20,11 +20,19 @@ function App() {
 
   // --- EFFECT ---
   useEffect(() => {
-    // Only fetch tasks if we are logged in (have a token)
     if (token) {
       fetchTasks();
     }
   }, [token]);
+
+  // 👇 NEW HELPER FUNCTION: Creates the "ID Card" for the server
+  const getConfig = () => {
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`, // Attaches the token
+      },
+    };
+  };
 
   // --- AUTH FUNCTIONS ---
   const handleAuth = (e) => {
@@ -35,9 +43,9 @@ function App() {
       .then(response => {
         if (isRegistering) {
           alert("Registration successful! Please log in.");
-          setIsRegistering(false); // Switch to login view
+          setIsRegistering(false); 
         } else {
-          setToken(response.data.token); // SAVE THE TOKEN!
+          setToken(response.data.token); 
           setAuthError("");
         }
       })
@@ -47,20 +55,23 @@ function App() {
   };
 
   const logout = () => {
-    setToken(null); // Throw away the key
+    setToken(null); 
     setTasks([]);
   };
 
-  // --- TASK FUNCTIONS ---
+  // --- TASK FUNCTIONS (UPDATED WITH getConfig) ---
+  
   const fetchTasks = () => {
-    axios.get(`${API_URL}/tasks`)
+    // 👇 UPDATE 1: Added getConfig()
+    axios.get(`${API_URL}/tasks`, getConfig())
       .then(response => setTasks(response.data))
       .catch(error => console.error(error));
   };
 
   const addTask = () => {
     if (!newTask) return;
-    axios.post(`${API_URL}/tasks`, { title: newTask })
+    // 👇 UPDATE 2: Added getConfig()
+    axios.post(`${API_URL}/tasks`, { title: newTask }, getConfig())
       .then(response => {
         setTasks([...tasks, response.data]);
         setNewTask("");
@@ -69,7 +80,8 @@ function App() {
   };
 
   const deleteTask = (id) => {
-    axios.delete(`${API_URL}/tasks/${id}`)
+    // 👇 UPDATE 3: Added getConfig()
+    axios.delete(`${API_URL}/tasks/${id}`, getConfig())
       .then(() => setTasks(tasks.filter(task => task._id !== id)))
       .catch(error => console.error(error));
   };
@@ -77,7 +89,8 @@ function App() {
   const addSubtask = (taskId) => {
     const text = subtaskInputs[taskId];
     if (!text) return;
-    axios.post(`${API_URL}/tasks/${taskId}/subtasks`, { title: text })
+    // 👇 UPDATE 4: Added getConfig()
+    axios.post(`${API_URL}/tasks/${taskId}/subtasks`, { title: text }, getConfig())
       .then(() => {
         fetchTasks();
         setSubtaskInputs({ ...subtaskInputs, [taskId]: "" });
@@ -86,35 +99,18 @@ function App() {
   };
 
   // --- RENDER ---
-  
-  // 1. IF NOT LOGGED IN -> SHOW LOGIN FORM
   if (!token) {
     return (
       <div className="app-container" style={{ textAlign: 'center', marginTop: '50px' }}>
         <h1>🔐 {isRegistering ? "Create Account" : "Login"}</h1>
-        
         <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '300px', margin: '0 auto' }}>
-          <input 
-            type="text" 
-            placeholder="Username" 
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            style={{ padding: '10px' }}
-          />
-          <input 
-            type="password" 
-            placeholder="Password" 
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            style={{ padding: '10px' }}
-          />
+          <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} style={{ padding: '10px' }} />
+          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} style={{ padding: '10px' }} />
           <button type="submit" style={{ padding: '10px', background: '#4f46e5', color: 'white', border: 'none', cursor: 'pointer' }}>
             {isRegistering ? "Sign Up" : "Log In"}
           </button>
         </form>
-
         {authError && <p style={{ color: 'red' }}>{authError}</p>}
-
         <p style={{ marginTop: '20px', cursor: 'pointer', color: '#4f46e5' }} onClick={() => setIsRegistering(!isRegistering)}>
           {isRegistering ? "Already have an account? Log In" : "Need an account? Sign Up"}
         </p>
@@ -122,7 +118,6 @@ function App() {
     );
   }
 
-  // 2. IF LOGGED IN -> SHOW TASK MANAGER
   return (
     <div className="app-container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -148,13 +143,11 @@ function App() {
                <span style={{ fontWeight: 'bold' }}>{task.title}</span>
                <button onClick={() => deleteTask(task._id)} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
             </div>
-            
             <div style={{ marginLeft: '20px', fontSize: '0.9rem', color: '#555' }}>
               {task.subtasks && task.subtasks.map((sub, index) => (
                 <div key={index}>• {sub.title}</div>
               ))}
             </div>
-
             <div style={{ marginTop: '10px', display: 'flex', gap: '5px' }}>
               <input 
                 type="text"
