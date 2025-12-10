@@ -4,33 +4,31 @@ import axios from 'axios';
 
 function App() {
   // --- STATE ---
-  const [token, setToken] = useState(null); // The Digital Key
+  const [token, setToken] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [subtaskInputs, setSubtaskInputs] = useState({});
   
-  // Auth State
+  // 1. 👇 NEW STATE: To store the name of the logged-in person
+  const [loggedInUser, setLoggedInUser] = useState(""); 
+
+  // Auth Form State
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [authError, setAuthError] = useState("");
 
-  // CHANGE THIS TO YOUR RENDER URL
   const API_URL = 'https://my-task-api-rahi.onrender.com/api'; 
 
-  // --- EFFECT ---
   useEffect(() => {
     if (token) {
       fetchTasks();
     }
   }, [token]);
 
-  // 👇 NEW HELPER FUNCTION: Creates the "ID Card" for the server
   const getConfig = () => {
     return {
-      headers: {
-        Authorization: `Bearer ${token}`, // Attaches the token
-      },
+      headers: { Authorization: `Bearer ${token}` },
     };
   };
 
@@ -46,6 +44,8 @@ function App() {
           setIsRegistering(false); 
         } else {
           setToken(response.data.token); 
+          // 2. 👇 NEW: Save the username from the server response
+          setLoggedInUser(response.data.username); 
           setAuthError("");
         }
       })
@@ -56,13 +56,12 @@ function App() {
 
   const logout = () => {
     setToken(null); 
+    setLoggedInUser(""); // Clear the name on logout
     setTasks([]);
   };
 
-  // --- TASK FUNCTIONS (UPDATED WITH getConfig) ---
-  
+  // --- TASK FUNCTIONS ---
   const fetchTasks = () => {
-    // 👇 UPDATE 1: Added getConfig()
     axios.get(`${API_URL}/tasks`, getConfig())
       .then(response => setTasks(response.data))
       .catch(error => console.error(error));
@@ -70,7 +69,6 @@ function App() {
 
   const addTask = () => {
     if (!newTask) return;
-    // 👇 UPDATE 2: Added getConfig()
     axios.post(`${API_URL}/tasks`, { title: newTask }, getConfig())
       .then(response => {
         setTasks([...tasks, response.data]);
@@ -80,7 +78,6 @@ function App() {
   };
 
   const deleteTask = (id) => {
-    // 👇 UPDATE 3: Added getConfig()
     axios.delete(`${API_URL}/tasks/${id}`, getConfig())
       .then(() => setTasks(tasks.filter(task => task._id !== id)))
       .catch(error => console.error(error));
@@ -89,7 +86,6 @@ function App() {
   const addSubtask = (taskId) => {
     const text = subtaskInputs[taskId];
     if (!text) return;
-    // 👇 UPDATE 4: Added getConfig()
     axios.post(`${API_URL}/tasks/${taskId}/subtasks`, { title: text }, getConfig())
       .then(() => {
         fetchTasks();
@@ -118,12 +114,19 @@ function App() {
     );
   }
 
+  // --- DASHBOARD MODE ---
   return (
     <div className="app-container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>🚀 Task Manager</h1>
-        <button onClick={logout} style={{ background: '#333', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer' }}>Logout</button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        {/* 3. 👇 NEW: Display the username here */}
+        <h1 style={{ margin: 0 }}>👋 Hello, {loggedInUser}!</h1>
+        
+        <button onClick={logout} style={{ background: '#333', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer' }}>
+          Logout
+        </button>
       </div>
+      
+      <p style={{ marginBottom: '20px', color: '#666' }}>Here are your tasks for today:</p>
 
       <div className="input-group">
         <input 
