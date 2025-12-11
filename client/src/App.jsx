@@ -9,7 +9,6 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   
-  // 👇 LEVEL 3 NEW: State for Category
   const [newCategory, setNewCategory] = useState("Personal"); 
   
   const [subtaskInputs, setSubtaskInputs] = useState({});
@@ -33,11 +32,10 @@ function App() {
 
   const getConfig = () => ({ headers: { Authorization: `Bearer ${token}` } });
 
-  // 👇 LEVEL 3 NEW: Helper to pick badge color
   const getCategoryColor = (category) => {
     if (category === 'Urgent') return '#ef4444'; // Red
     if (category === 'Work') return '#3b82f6';   // Blue
-    return '#10b981';                            // Green (Personal)
+    return '#10b981';                            // Green
   };
 
   // --- AUTH FUNCTIONS ---
@@ -78,8 +76,6 @@ function App() {
 
   const addTask = () => {
     if (!newTask) return;
-    
-    // 👇 LEVEL 3 NEW: Send the category to the server
     axios.post(`${API_URL}/tasks`, { title: newTask, category: newCategory }, getConfig())
       .then(response => {
         setTasks([...tasks, response.data]);
@@ -151,10 +147,9 @@ function App() {
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h1 style={{ margin: 0 }}>👋 Hello, {loggedInUser}!</h1>
-            <button onClick={logout} style={{ background: '#333', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer' }}>Logout</button>
+            <button onClick={logout} style={{ background: '#303b39ff', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer' }}>Logout</button>
           </div>
           
-          {/* 👇 LEVEL 3 NEW: Dropdown Menu */}
           <div className="input-group" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
             <select 
               value={newCategory} 
@@ -169,14 +164,12 @@ function App() {
             <input type="text" placeholder="What needs to be done?" value={newTask} onChange={(e) => setNewTask(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTask()} style={{ flex: 1, padding: '10px' }} />
             <button onClick={addTask} style={{ padding: '10px 20px', background: '#4f46e5', color: 'white', border: 'none', cursor: 'pointer' }}>Add</button>
           </div>
-          {/* 👆 END DROPDOWN MENU */}
 
           {isLoading ? <div className="loader"></div> : (
             <ul>
               {tasks.map(task => (
                 <li key={task._id} className="task-card" style={{ display: 'block', position: 'relative' }}> 
                   
-                  {/* 👇 LEVEL 3 NEW: Colored Badge */}
                   <span style={{ 
                     position: 'absolute', top: '-10px', right: '-5px', 
                     background: getCategoryColor(task.category || 'Personal'), 
@@ -191,26 +184,33 @@ function App() {
                         {editingTaskId === task._id ? (
                           <div style={{ display: 'flex', gap: '5px', flex: 1 }}>
                             <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} style={{ padding: '5px', flex: 1 }} />
-                            <button onClick={() => saveEdit(task._id)} style={{ background: '#22c55e', color: 'white', border: 'none', padding: '5px', borderRadius: '4px' }}>Save</button>
-                            <button onClick={() => setEditingTaskId(null)} style={{ background: '#9ca3af', color: 'white', border: 'none', padding: '5px', borderRadius: '4px' }}>Cancel</button>
+                            <button onClick={() => saveEdit(task._id)} style={{ background: '#22c55e', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}>Save</button>
+                            <button onClick={() => setEditingTaskId(null)} style={{ background: '#9ca3af', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
                           </div>
                         ) : (
                           <span style={{ fontWeight: 'bold', textDecoration: task.status === 'done' ? 'line-through' : 'none', color: task.status === 'done' ? '#999' : 'black' }}>{task.title}</span>
                         )}
                       </div>
+                      
+                      {/* 👇 PROFESSIONAL TEXT BUTTONS */}
                       {editingTaskId !== task._id && (
                         <div style={{ display: 'flex', gap: '5px' }}>
-                          <button onClick={() => { setEditingTaskId(task._id); setEditTitle(task.title); }} style={{ background: '#eab308', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px' }}>✏️</button>
-                          <button onClick={() => deleteTask(task._id)} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px' }}>🗑️</button>
+                          <button onClick={() => { setEditingTaskId(task._id); setEditTitle(task.title); }} style={{ background: '#f9f9f9ff', color: 'blue', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}>
+                            ✏️
+                          </button>
+                          <button onClick={() => deleteTask(task._id)} style={{ background: '#ffffffff', color: 'blue', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer' }}>
+                            Delete
+                          </button>
                         </div>
                       )}
+                      
                   </div>
                   <div style={{ marginLeft: '20px', fontSize: '0.9rem', color: '#555' }}>
                     {task.subtasks && task.subtasks.map((sub, index) => <div key={index}>• {sub.title}</div>)}
                   </div>
                   <div style={{ marginTop: '10px', display: 'flex', gap: '5px' }}>
                     <input type="text" placeholder="Add sub-task..." value={subtaskInputs[task._id] || ""} onChange={(e) => setSubtaskInputs({ ...subtaskInputs, [task._id]: e.target.value })} style={{ padding: '5px', width: '70%' }} />
-                    <button onClick={() => addSubtask(task._id)} style={{ padding: '5px', background: '#4f46e5', color: 'white', border: 'none' }}>+</button>
+                    <button onClick={() => addSubtask(task._id)} style={{ padding: '5px', background: '#4f46e5', color: 'white', border: 'none', cursor: 'pointer' }}>+</button>
                   </div>
                 </li>
               ))}
