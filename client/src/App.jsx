@@ -147,7 +147,7 @@ function App() {
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h1 style={{ margin: 0 }}>👋 Hello, {loggedInUser}!</h1>
-            <button onClick={logout} style={{ background: '#303b39ff', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer' }}>Logout</button>
+            <button onClick={logout} style={{ background: '#333', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer' }}>Logout</button>
           </div>
           
           <div className="input-group" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
@@ -178,9 +178,13 @@ function App() {
                     {task.category || 'Personal'}
                   </span>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', marginTop: '5px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
-                        <input type="checkbox" checked={task.status === 'done'} onChange={() => toggleTaskCompletion(task._id, task.status)} style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
+                  {/* 👇 FIXED LAYOUT: alignItems: 'flex-start' keeps buttons at the top */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px', marginTop: '5px' }}>
+                      
+                      {/* 👇 FIXED LAYOUT: minWidth: 0 prevents text from exploding the box */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+                        <input type="checkbox" checked={task.status === 'done'} onChange={() => toggleTaskCompletion(task._id, task.status)} style={{ width: '18px', height: '18px', cursor: 'pointer', flexShrink: 0 }} />
+                        
                         {editingTaskId === task._id ? (
                           <div style={{ display: 'flex', gap: '5px', flex: 1 }}>
                             <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} style={{ padding: '5px', flex: 1 }} />
@@ -188,18 +192,26 @@ function App() {
                             <button onClick={() => setEditingTaskId(null)} style={{ background: '#9ca3af', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
                           </div>
                         ) : (
-                          <span style={{ fontWeight: 'bold', textDecoration: task.status === 'done' ? 'line-through' : 'none', color: task.status === 'done' ? '#999' : 'black' }}>{task.title}</span>
+                          // 👇 FIXED TEXT: wordBreak handles the long "aaaaa" strings
+                          <span style={{ 
+                            fontWeight: 'bold', 
+                            textDecoration: task.status === 'done' ? 'line-through' : 'none', 
+                            color: task.status === 'done' ? '#999' : 'black',
+                            wordBreak: 'break-word', // Breaks long words
+                            overflowWrap: 'anywhere' // Safer break for modern browsers
+                          }}>
+                            {task.title}
+                          </span>
                         )}
                       </div>
                       
-                      {/* 👇 PROFESSIONAL TEXT BUTTONS */}
                       {editingTaskId !== task._id && (
-                        <div style={{ display: 'flex', gap: '5px' }}>
-                          <button onClick={() => { setEditingTaskId(task._id); setEditTitle(task.title); }} style={{ background: '#f9f9f9ff', color: 'blue', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}>
+                        <div style={{ display: 'flex', gap: '5px', marginLeft: '10px', flexShrink: 0 }}>
+                          <button onClick={() => { setEditingTaskId(task._id); setEditTitle(task.title); }} style={{ background: '#ffffffff', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '1rem', cursor: 'pointer' }}>
                             ✏️
                           </button>
-                          <button onClick={() => deleteTask(task._id)} style={{ background: '#ffffffff', color: 'blue', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer' }}>
-                            Delete
+                          <button onClick={() => deleteTask(task._id)} style={{ background: '#ffffffff', color: 'blue', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}>
+                            Del
                           </button>
                         </div>
                       )}
