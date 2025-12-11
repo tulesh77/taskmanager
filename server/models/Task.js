@@ -9,7 +9,15 @@ const taskSchema = new mongoose.Schema({
   description: {
     type: String,
   },
-  
+
+  // 👇 LEVEL 3 NEW FIELD: Category (Work, Personal, Urgent)
+  category: {
+    type: String,
+    enum: ['Work', 'Personal', 'Urgent'], // Restricts input to these 3 choices
+    default: 'Personal',
+  },
+  // 👆 END NEW FIELD
+
   subtasks: [
     {
       title: { type: String, required: true },
@@ -23,13 +31,12 @@ const taskSchema = new mongoose.Schema({
     default: 'todo',
   },
 
-  // 👇 NEW FIELD: This links the task to a specific user
+  // 👇 This links the task to a specific user (Privacy)
   owner: {
-    type: mongoose.Schema.Types.ObjectId, // Uses the User's unique ID format
-    ref: 'User',                          // Points to the 'User' collection
-    required: true,                       // A task MUST have an owner
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User',                          
+    required: true,                       
   }
-  // 👆 END NEW FIELD
 
 }, { timestamps: true });
 
