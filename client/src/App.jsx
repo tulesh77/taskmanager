@@ -178,10 +178,8 @@ function App() {
                     {task.category || 'Personal'}
                   </span>
 
-                  {/* 👇 FIXED LAYOUT: alignItems: 'flex-start' keeps buttons at the top */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px', marginTop: '5px' }}>
                       
-                      {/* 👇 FIXED LAYOUT: minWidth: 0 prevents text from exploding the box */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
                         <input type="checkbox" checked={task.status === 'done'} onChange={() => toggleTaskCompletion(task._id, task.status)} style={{ width: '18px', height: '18px', cursor: 'pointer', flexShrink: 0 }} />
                         
@@ -192,13 +190,12 @@ function App() {
                             <button onClick={() => setEditingTaskId(null)} style={{ background: '#9ca3af', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
                           </div>
                         ) : (
-                          // 👇 FIXED TEXT: wordBreak handles the long "aaaaa" strings
                           <span style={{ 
                             fontWeight: 'bold', 
                             textDecoration: task.status === 'done' ? 'line-through' : 'none', 
                             color: task.status === 'done' ? '#999' : 'black',
-                            wordBreak: 'break-word', // Breaks long words
-                            overflowWrap: 'anywhere' // Safer break for modern browsers
+                            wordBreak: 'break-word',
+                            overflowWrap: 'anywhere'
                           }}>
                             {task.title}
                           </span>
@@ -207,19 +204,26 @@ function App() {
                       
                       {editingTaskId !== task._id && (
                         <div style={{ display: 'flex', gap: '5px', marginLeft: '10px', flexShrink: 0 }}>
-                          <button onClick={() => { setEditingTaskId(task._id); setEditTitle(task.title); }} style={{ background: '#ffffffff', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '1rem', cursor: 'pointer' }}>
+                          <button onClick={() => { setEditingTaskId(task._id); setEditTitle(task.title); }} style={{ background: '#eab308', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '1rem', cursor: 'pointer' }}>
                             ✏️
                           </button>
-                          <button onClick={() => deleteTask(task._id)} style={{ background: '#ffffffff', color: 'blue', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}>
+                          <button onClick={() => deleteTask(task._id)} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}>
                             Del
                           </button>
                         </div>
                       )}
                       
                   </div>
+                  
                   <div style={{ marginLeft: '20px', fontSize: '0.9rem', color: '#555' }}>
-                    {task.subtasks && task.subtasks.map((sub, index) => <div key={index}>• {sub.title}</div>)}
+                    {task.subtasks && task.subtasks.map((sub, index) => (
+                      // 👇 FIXED: Added wordBreak and overflowWrap to sub-tasks too
+                      <div key={index} style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                        • {sub.title}
+                      </div>
+                    ))}
                   </div>
+
                   <div style={{ marginTop: '10px', display: 'flex', gap: '5px' }}>
                     <input type="text" placeholder="Add sub-task..." value={subtaskInputs[task._id] || ""} onChange={(e) => setSubtaskInputs({ ...subtaskInputs, [task._id]: e.target.value })} style={{ padding: '5px', width: '70%' }} />
                     <button onClick={() => addSubtask(task._id)} style={{ padding: '5px', background: '#4f46e5', color: 'white', border: 'none', cursor: 'pointer' }}>+</button>
